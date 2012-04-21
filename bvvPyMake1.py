@@ -10,9 +10,10 @@ import glob
 import re
 #}}}
 
-# A line to create merge conflict.
+# Program Starts
 
 script_dir = os.getcwd()
+
 
 depend = {}
 rules = {}
