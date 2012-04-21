@@ -10,7 +10,10 @@ import glob
 import re
 #}}}
 
+#Program Starts
+
 script_dir = os.getcwd()
+
 
 depend = {}
 rules = {}
