@@ -9,7 +9,7 @@ import math
 import glob
 import re
 import errno
-import bvvPyMake1
+import PyMake
 import subprocess
 #}}}
 MAX_PARALLEL_JOBS = 30
@@ -26,38 +26,38 @@ os.chdir(dir)
 ########################################################################
 def rule_touch(target, prereq):
     subprocess.call("touch " + target, shell=True)
-bvvPyMake1.queues[rule_touch] = "express"
+PyMake.queues[rule_touch] = "express"
 
 
-bvvPyMake1.rules['T'] = rule_touch
-bvvPyMake1.rules['t9'] = rule_touch
-bvvPyMake1.rules['t8'] = rule_touch
-bvvPyMake1.rules['t7'] = rule_touch
-bvvPyMake1.rules['t6'] = rule_touch
-bvvPyMake1.rules['t5'] = rule_touch
-bvvPyMake1.rules['t4'] = rule_touch
-bvvPyMake1.rules['t3'] = rule_touch
-bvvPyMake1.rules['t2'] = rule_touch
-bvvPyMake1.rules['t1'] = rule_touch
+PyMake.rules['T'] = rule_touch
+PyMake.rules['t9'] = rule_touch
+PyMake.rules['t8'] = rule_touch
+PyMake.rules['t7'] = rule_touch
+PyMake.rules['t6'] = rule_touch
+PyMake.rules['t5'] = rule_touch
+PyMake.rules['t4'] = rule_touch
+PyMake.rules['t3'] = rule_touch
+PyMake.rules['t2'] = rule_touch
+PyMake.rules['t1'] = rule_touch
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  END OF RULES  ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-bvvPyMake1.dorule(dir, globals())
+PyMake.dorule(dir, globals())
 
 ########################################################################
 ########################################################################
 ##################           BEGIN DEPENDENCIES         ################
 ########################################################################
 ########################################################################
-bvvPyMake1.depend['T'] = ['t9']
-bvvPyMake1.depend['t9'] = ['t6', 't7', 't8']
-bvvPyMake1.depend['t8'] = ['t5']
-bvvPyMake1.depend['t7'] = ['t3', 't4']
-bvvPyMake1.depend['t5'] = ['t1', 't2']
-bvvPyMake1.depend['t6'] = ['t5']
+PyMake.depend['T'] = ['t9']
+PyMake.depend['t9'] = ['t6', 't7', 't8']
+PyMake.depend['t8'] = ['t5']
+PyMake.depend['t7'] = ['t3', 't4']
+PyMake.depend['t5'] = ['t1', 't2']
+PyMake.depend['t6'] = ['t5']
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^ END OF DEPENDENCIES  ^^^^^^^^^^^^^^^^^^^^^^
 
 
-bvvPyMake1.make('T', MAX_PARALLEL_JOBS, dir)
+PyMake.make('T', MAX_PARALLEL_JOBS, dir)
 
 sys.exit()
 
