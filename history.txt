@@ -1,0 +1,1 @@
+bsub -q express -o /home/bugaev/MyProg/PYMAKE/WORKDIR/t5.out -e /home/bugaev/MyProg/PYMAKE/WORKDIR/t5.err /home/bugaev/MyProg/PYMAKE/./test_make.py rule_touch t5 "['t1', 't2']" 0
