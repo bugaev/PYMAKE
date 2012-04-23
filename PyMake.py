@@ -10,10 +10,7 @@ import glob
 import re
 #}}}
 
-# Program Starts
-
 script_dir = os.getcwd()
-
 
 depend = {}
 rules = {}
@@ -206,6 +203,7 @@ def get_tobeupdated(targets, sorted_related, kids, echo = 1):
     for target in targets:
         for path in find_all_paths(kids, target, 'T'):
             for t in path:
+                pass
 
 
 def make(thetarget, MAX_PARALLEL_JOBS, dir):
@@ -232,10 +230,9 @@ def make(thetarget, MAX_PARALLEL_JOBS, dir):
     print "Final target list: ", targets
     print 'kids: ', kids
 
-    get_tobeupdated(targets, sorted_related, kids, echo = 1) 
-
-
-    sys.exit()
+    # debug:
+    # get_tobeupdated(targets, sorted_related, kids, echo = 1) 
+    # sys.exit()
 
     changed_files = set()
 
@@ -428,6 +425,7 @@ def dorule(dir, arg_globals):
         if argc > 2:
             target = sys.argv[2]
             if argc > 3:
+                # print "PyMake::sys.argv[3]: ", sys.argv[3]
                 prereq = eval(sys.argv[3])
                 if argc > 4:
                     ind = sys.argv[4]

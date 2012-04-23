@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#! /usr/bin/env python2.7
 #{{{ Import this, import that...
 import os
 import bz2
@@ -12,11 +12,9 @@ import errno
 import PyMake
 import subprocess
 #}}}
-MAX_PARALLEL_JOBS = 30
-dir = "/nfs/farm/g/glast/u36/agisSims/SPB/g/MLT"
-SCRIPTDIR = "/u/gi/bugaev/AGIS_SCRIPTS_SLAC"
-AREA_DIR = "MLT"
-CORSIKA_DIR = dir + "/" + AREA_DIR
+MAX_PARALLEL_JOBS = 2
+# Regardless of the location of the make script, the WORKDIR will always be found:
+dir = os.path.dirname(os.path.abspath(sys.argv[0])) + "/WORKDIR"
 os.chdir(dir)
 
 ########################################################################
