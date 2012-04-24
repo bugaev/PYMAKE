@@ -242,6 +242,11 @@ def make(thetarget, MAX_PARALLEL_JOBS, dir):
     print bcolors.OKBLUE + "Targets that will be preserved: " + str(preserved) + bcolors.ENDC
     print bcolors.HEADER + "Targets that will be updated: " + str(tobeupdated) + bcolors.ENDC
 
+    if len(tobeupdated) < 1:
+        print "The target is up to date."
+        sys.exit()
+
+
     print bcolors.HEADER + "Rules will be executed in the following order:" + bcolors.ENDC
     for target in tobeupdated:
      if target in rules: 
