@@ -59,4 +59,25 @@ PyMake.make('T', MAX_PARALLEL_JOBS, dir)
 
 sys.exit()
 
- 
+# Problem to be solved:
+# (.) - missing files.
+# [.] - existing files.
+#  X  - the target.
+# {.} - new files.
+#                                           X == T == [10]
+#                                           |
+#                                           |
+#                                           |
+#                                          (9)
+#                                          /|\
+#                                         / | \
+#                                        /  |  \
+#                                      (8)  |   \
+#                                      /    |    \
+#                                     /     |     \
+#                                    /      |      \
+#                                  (5)---->[6]     {7}
+#                                  / \             / \
+#                                 /   \           /   \
+#                                /     \         /     \
+#                              [1]     [2]     [3]     [4]

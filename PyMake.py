@@ -242,6 +242,11 @@ def make(thetarget, MAX_PARALLEL_JOBS, dir):
     print bcolors.OKBLUE + "Targets that will be preserved: " + str(preserved) + bcolors.ENDC
     print bcolors.HEADER + "Targets that will be updated: " + str(tobeupdated) + bcolors.ENDC
 
+    if len(tobeupdated) < 1:
+        print "The target is up to date."
+        sys.exit()
+
+
     print bcolors.HEADER + "Rules will be executed in the following order:" + bcolors.ENDC
     for target in tobeupdated:
      if target in rules: 
@@ -408,7 +413,7 @@ def make(thetarget, MAX_PARALLEL_JOBS, dir):
                 print "rules_lock_present after adding", rules_lock_present
             print "Number of jobs in the queue: ", len(rules_lock_present)
         if cnt_done < len(tobeupdated):
-            time.sleep(1)
+            time.sleep(0.1)
         else:
             break
     print bcolors.OKGREEN + "All Done!:)" + bcolors.ENDC
