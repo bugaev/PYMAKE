@@ -185,7 +185,7 @@ def check_bsub_success(filename, echo = False):
         return (False, False, False)
 
 
-def get_tobeupdated(targets, sorted_related, kids, echo = 1):
+def get_tobeupdated(targets, sorted_related, depend, kids, echo = 1):
     tobeupdated = []
     preserved = []
     def get_times(targets):
@@ -196,14 +196,47 @@ def get_tobeupdated(targets, sorted_related, kids, echo = 1):
                 times[target] = target_mod
         return times
 
-    times = get_times(targets)
+    times = get_times(sorted_related)
     if echo: print 'times: ', times
     updated = []
-    changed = set()
-    for target in targets:
-        for path in find_all_paths(kids, target, 'T'):
-            for t in path:
-                pass
+    old = set()
+    # Find "old" targets. Both existing and non-existing targets can be
+    # "old". "Old" means that some of the ancestors of such targets are
+    # newer than its descendants.
+    # If some target is old, it needs to be rebuilt.
+    for target in sorted_related:
+        if target in times:
+            target_time = times[target]
+        else:
+            continue
+        all_paths_to_T = find_all_paths(kids, target, 'T')
+        target_is_new = False
+        # A phony target:
+        if target in depend and len(depend[target]) < 1:
+        # target is rebuilt every time make runs because it doesn't have
+        # any prerequisites.
+        # It is always old and newer than any of its descendants by definition:
+            target_is_new = True
+            print "Adding " + target + " to old"
+            old.add(target)
+        else:
+            for path in all_paths_to_T:
+                print 'path: ', path
+                # Check if target is newer than some of its descendants:
+                for t in path[1:]:
+                    if t in times and target_time > times[t]:
+                        print target +  " is newer than " + t
+                        # It is newer indeed:
+                        target_is_new = True
+        if target_is_new:
+        # Mark all descendants of target as old
+            for path in all_paths_to_T:
+                for t in path[1:]:
+                    old.add(t)
+    print 'old targets:', old
+    print (target not in depend)
+    print depend
+    print (target in rules)
 
 
 def make(thetarget, MAX_PARALLEL_JOBS, dir):
@@ -225,14 +258,14 @@ def make(thetarget, MAX_PARALLEL_JOBS, dir):
 
     sorted_nodes = topsort.topsort(parent_pairs)
 
-    sorted_related = test_rules(rules, sorted_nodes, depend, thetarget, echo = 0)
+    sorted_related = test_rules(rules, sorted_nodes, depend, thetarget, echo = 1)
     targets=strip_input_files(sorted_related, depend)
     print "Final target list: ", targets
     print 'kids: ', kids
 
     # debug:
-    # get_tobeupdated(targets, sorted_related, kids, echo = 1) 
-    # sys.exit()
+    get_tobeupdated(targets, sorted_related, depend, kids, echo = 1) 
+    sys.exit()
 
     changed_files = set()
 

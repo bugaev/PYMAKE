@@ -33,10 +33,11 @@ PyMake.rules['t8'] = rule_touch
 PyMake.rules['t7'] = rule_touch
 PyMake.rules['t6'] = rule_touch
 PyMake.rules['t5'] = rule_touch
-PyMake.rules['t4'] = rule_touch
-PyMake.rules['t3'] = rule_touch
+#PyMake.rules['t4'] = rule_touch
+#PyMake.rules['t3'] = rule_touch
 PyMake.rules['t2'] = rule_touch
-PyMake.rules['t1'] = rule_touch
+#PyMake.rules['t1'] = rule_touch
+PyMake.rules['t0'] = rule_touch
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  END OF RULES  ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PyMake.dorule(dir, globals())
@@ -47,11 +48,12 @@ PyMake.dorule(dir, globals())
 ########################################################################
 ########################################################################
 PyMake.depend['T'] = ['t9']
-PyMake.depend['t9'] = ['t6', 't7', 't8']
+PyMake.depend['t9'] = ['t6', 't8', 't0']
 PyMake.depend['t8'] = ['t5']
 PyMake.depend['t7'] = ['t3', 't4']
 PyMake.depend['t5'] = ['t1', 't2']
 PyMake.depend['t6'] = ['t5']
+PyMake.depend['t0'] = ['t7']
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^ END OF DEPENDENCIES  ^^^^^^^^^^^^^^^^^^^^^^
 
 
@@ -62,9 +64,9 @@ sys.exit()
 # Problem to be solved:
 # (.) - missing files.
 # [.] - existing files.
-#  X  - the target.
+#  T  - the target.
 # {.} - new files.
-#                                           X == T == [10]
+#                                          [T]
 #                                           |
 #                                           |
 #                                           |
@@ -73,7 +75,7 @@ sys.exit()
 #                                         / | \
 #                                        /  |  \
 #                                      (8)  |   \
-#                                      /    |    \
+#                                      /    |   [0] 
 #                                     /     |     \
 #                                    /      |      \
 #                                  (5)---->[6]     {7}
