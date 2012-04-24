@@ -408,7 +408,7 @@ def make(thetarget, MAX_PARALLEL_JOBS, dir):
                 print "rules_lock_present after adding", rules_lock_present
             print "Number of jobs in the queue: ", len(rules_lock_present)
         if cnt_done < len(tobeupdated):
-            time.sleep(1)
+            time.sleep(0.1)
         else:
             break
     print bcolors.OKGREEN + "All Done!:)" + bcolors.ENDC
