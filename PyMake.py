@@ -190,44 +190,71 @@ def get_tobeupdated(targets, sorted_related, depend, kids, echo = 1):
     preserved = []
     def get_times(targets):
         times = {}
+        non_existent = set()
         for target in targets:
             if os.path.isfile(target):
                 target_mod = os.path.getmtime(target)
                 times[target] = target_mod
-        return times
+            else:
+                non_existent.add(target)
+        return times, non_existent
 
-    times = get_times(sorted_related)
+    times, non_existent = get_times(sorted_related)
     if echo: print 'times: ', times
-    updated = []
-    old = set()
-    # Find "old" targets. Both existing and non-existing targets can be
-    # "old". "Old" means that some of the ancestors of such targets are
+    changed = set()
+    nonexistend_unchanged = set()
+    # Find "changed" targets. Both existing and non-existing targets can be
+    # "changed". "Changed" means that some of the ancestors of such targets are
     # newer than its descendants.
-    # If some target is old, it needs to be rebuilt.
-    for target in sorted_related:
+    # If some target is changed, it needs to be rebuilt.
+    inode = 0
+    while inode < len(sorted_related):
+        target = sorted_related[inode]
+
+        if inode in changed:
+            # Looking for path DOWN to min index "k" in nonexistent_unchanged
+            # with all non-existing nodes in between:
+            for k in range(len(nonexistent_unchanged)):
+                paths = find_all_paths(kids, nonexistent_unchanged[k], target)
+                for path in paths:
+                    path_empty = False
+                    for t in path[1:-1]:
+                        # Some existing node is found inbetween node:
+                        if t in times: break
+                    else:
+                        path_empty = True
+                    if path_empty:
+
         if target in times:
             target_time = times[target]
         else:
-            continue
+            nonexistent_unchanged.add(inode)
+
         all_paths_to_T = find_all_paths(kids, target, 'T')
         target_is_new = False
-        # A phony target:
-        if target in depend and len(depend[target]) < 1:
-        # target is rebuilt every time make runs because it doesn't have
-        # any prerequisites.
-        # It is always old and newer than any of its descendants by definition:
-            target_is_new = True
-            print "Adding " + target + " to old"
-            old.add(target)
+        if target in old:
+            # Check if the target has a non-existent ancestor with no existing
+            # nodes inbetween.
+            pass
+            # If yes, mark such an ancestor as old
         else:
-            for path in all_paths_to_T:
-                print 'path: ', path
-                # Check if target is newer than some of its descendants:
-                for t in path[1:]:
-                    if t in times and target_time > times[t]:
-                        print target +  " is newer than " + t
-                        # It is newer indeed:
-                        target_is_new = True
+            # A phony target:
+            if target in depend and len(depend[target]) < 1:
+            # target is rebuilt every time make runs because it doesn't have
+            # any prerequisites.
+            # It is always old and newer than any of its descendants by definition:
+                target_is_new = True
+                print "Adding " + target + " to old"
+                old.add(target)
+            else:
+                for path in all_paths_to_T:
+                    print 'path: ', path
+                    # Check if target is newer than some of its descendants:
+                    for t in path[1:]:
+                        if t in times and target_time > times[t]:
+                            print target +  " is newer than " + t
+                            # It is newer indeed:
+                            target_is_new = True
         if target_is_new:
         # Mark all descendants of target as old
             for path in all_paths_to_T:
@@ -237,6 +264,25 @@ def get_tobeupdated(targets, sorted_related, depend, kids, echo = 1):
     print (target not in depend)
     print depend
     print (target in rules)
+    # Find all missing targets that need to be build - in addition to
+    # missing targets that are "old", some of those missing nodes that are not
+    # old but are ancestors (direct and indirect) for "old" nodes need to be
+    # built too. 
+    # In order to find missing files that are not "old" but are required to
+    # rebuild "old" files, __iterate through all missing nodes that are
+    # not old, but have such a path to some old node that doesn't
+    # have any existing unchanged node and mark them "old" too__.
+
+    # Iterate through targets, not sorted_related, because we don't want
+    # nodes at the very bottom. Such nodes are either phony (in this
+    # case the are already marked as old) or real existing files (
+    # the corresponding test is already done in test_rules).
+    #for target in targets:
+    #    if target in times: continue # pick only non-existent files.
+    #    if target in old: continue # targets marked as old are not ineresting, they will be built anyways.
+    #    # Check target against all old targets
+
+
 
 
 def make(thetarget, MAX_PARALLEL_JOBS, dir):
