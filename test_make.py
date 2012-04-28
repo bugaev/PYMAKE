@@ -61,25 +61,22 @@ PyMake.make('T', MAX_PARALLEL_JOBS, dir)
 
 sys.exit()
 
-# Problem to be solved:
-# (.) - missing files.
-# [.] - existing files.
-#  T  - the target.
-# {.} - new files.
-#                                          [T]
-#                                           |
-#                                           |
-#                                           |
-#                                          (9)
-#                                          /|\
-#                                         / | \
-#                                        /  |  \
-#                                      (8)  |   \
-#                                      /    |   [0] 
-#                                     /     |     \
-#                                    /      |      \
-#                                  (5)---->[6]     {7}
-#                                  / \             / \
-#                                 /   \           /   \
-#                                /     \         /     \
-#                              [1]     [2]     [3]     [4]
+
+# Problem to be solved:                         ----(0)
+#  0  - the target.               	       /    / \                  
+# (.) - missing files.      	              /    /   \                 
+# [.] - existing files.               --------    /     \                
+# {.} - new files.                   /           /       \               
+#          		            /           /         \              
+#      		     	           /           /           \             
+#      		                 [1]         [2]           [3]           
+#                                / \         /  \          / \           
+#      		     	        /   \       /    \        /   \          
+#      		               /    (4)    /     [5]	(6)    \         
+#      		              /       \   /        \    /      	\        
+#      		             /         \ /          \  /	{7}      
+#      		           (8)         (9)          (14)          \      
+#      		           /    	|            / \	   \     
+#      		          /     	|           /   \           \    
+#      		         /      	|          /     \           \   
+#      		       [11]           [12]       [13]   [15]         [10]
