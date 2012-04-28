@@ -35,7 +35,7 @@ PyMake.rules['t6'] = rule_touch
 PyMake.rules['t5'] = rule_touch
 #PyMake.rules['t4'] = rule_touch
 #PyMake.rules['t3'] = rule_touch
-PyMake.rules['t2'] = rule_touch
+#PyMake.rules['t2'] = rule_touch
 #PyMake.rules['t1'] = rule_touch
 PyMake.rules['t0'] = rule_touch
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  END OF RULES  ^^^^^^^^^^^^^^^^^^^^^^^^^^

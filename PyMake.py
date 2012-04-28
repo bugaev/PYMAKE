@@ -97,11 +97,11 @@ def test_rules(rules, tsorted, depend, thetarget, echo=0):
  if echo: print "Ordered rules:"
  for i in sorted_related:
       if i in rules:
-           if i not in depend: depend[i] = [] 
-           if echo: print str(rules[i]) + "(" + str(i) + str(depend[i]) + ")"
            # target needs not to have any
            # prerequisites, but need to have an entry in 'depend' associative
            # array.
+           if i not in depend: depend[i] = [] 
+           if echo: print str(rules[i]) + "(" + str(i) + str(depend[i]) + ")"
       elif i in depend:
            print bcolors.FAIL + "ERROR: Rule for --->" + str(i) + "<--- not found. Exit!" + bcolors.ENDC
            sys.exit()
@@ -186,101 +186,144 @@ def check_bsub_success(filename, echo = False):
 
 
 def get_tobeupdated(targets, sorted_related, depend, kids, echo = 1):
-    tobeupdated = []
-    preserved = []
+    """ Find all nodes in sorted_related that need to be rebuilt.
+
+    Missing nodes are rebuilt only if they are needed.
+    """
+
+    def propagate_change(target, kids, targets):
+        all_paths_to_T = find_all_paths(kids, target, targets[-1])
+        # Mark all descendants of target as changed
+        for path in all_paths_to_T:
+            for t in path[1:]:
+                changed.add(t)
+
     def get_times(targets):
         times = {}
         non_existent = set()
         for target in targets:
-            if os.path.isfile(target):
-                target_mod = os.path.getmtime(target)
-                times[target] = target_mod
-            else:
+            outfile_exists, status_defined, status_success = check_bsub_success(target + ".out")
+            if outfile_exists and not status_success:
+                if echo: print target + " exists but its *.out file indicates it is invalid."
                 non_existent.add(target)
+            else:
+                if os.path.isfile(target):
+                    target_mod = os.path.getmtime(target)
+                    times[target] = target_mod
+                else:
+                    non_existent.add(target)
         return times, non_existent
+
+    tobeupdated = []
+    preserved = []
 
     times, non_existent = get_times(sorted_related)
     if echo: print 'times: ', times
-    changed = set()
-    nonexistend_unchanged = set()
+    changed = set() # A set of node names.
+    T = sorted_related[-1] # The target we want to build.
+    if T in non_existent: changed.add(T)
     # Find "changed" targets. Both existing and non-existing targets can be
     # "changed". "Changed" means that some of the ancestors of such targets are
     # newer than its descendants.
     # If some target is changed, it needs to be rebuilt.
     inode = 0
+    # Browsing through "targets" because status of empty nodes at the
+    # very bottom is always known (changed) - empty nodes must be associated with
+    # some rule which is always triggered.
     while inode < len(sorted_related):
         target = sorted_related[inode]
+        if echo: print 'inode: ' + str(inode) + ', node: ' + target
+        # target is a endnode with a rule;
+        # target is always built if it is a end node with a rule.
+        # In this case, depend[target] = []
+        # If target is not in depend, it is a endnode without a rule,
+        # this case will be treated in "target didn't change, exists"
+        # condition.
+        if target in depend and not depend[target]: 
+            if echo: print target + ' is a bottom node with a rule --> adding it to "changed"'
+            changed.add(target)
+            propagate_change(target, kids, targets)
+            inode = inode + 1
+            continue
 
-        if inode in changed:
-            # Looking for path DOWN to min index "k" in nonexistent_unchanged
-            # with all non-existing nodes in between:
-            for k in range(len(nonexistent_unchanged)):
-                paths = find_all_paths(kids, nonexistent_unchanged[k], target)
+        if target in changed:
+            if echo: print target + ' will change'
+            # Look for path DOWN to min index "knode" of nonexistent and
+            # unchanged node with all non-existing nodes in between:
+            knode = -1
+            for k in range(inode): # Only ancestors are of interest.
+                ktarget = sorted_related[k]
+                if (ktarget in changed) or (ktarget in times): continue
+                paths = find_all_paths(kids, sorted_related[k], target)
+                empty_path_exists = False
                 for path in paths:
-                    path_empty = False
                     for t in path[1:-1]:
                         # Some existing node is found inbetween node:
                         if t in times: break
                     else:
-                        path_empty = True
-                    if path_empty:
-
-        if target in times:
-            target_time = times[target]
-        else:
-            nonexistent_unchanged.add(inode)
-
-        all_paths_to_T = find_all_paths(kids, target, 'T')
-        target_is_new = False
-        if target in old:
-            # Check if the target has a non-existent ancestor with no existing
-            # nodes inbetween.
-            pass
-            # If yes, mark such an ancestor as old
-        else:
-            # A phony target:
-            if target in depend and len(depend[target]) < 1:
-            # target is rebuilt every time make runs because it doesn't have
-            # any prerequisites.
-            # It is always old and newer than any of its descendants by definition:
-                target_is_new = True
-                print "Adding " + target + " to old"
-                old.add(target)
+                        # We proved that a path consisting of non-existent
+                        # nodes exists.
+                        empty_path_exists = True
+                        # No need to check other paths.
+                        break
+                else:
+                    # No empty path found
+                    if echo: print target + " will change, but it\
+                    doesn't pull any missing nodes"
+                if empty_path_exists:
+                    # Found index k of nonexistent and unchanged node.
+                    knode = k
+                    break
             else:
+                if echo: print target + ' will change, but no empty nodes will be pulled by it.'
+                
+            if knode > -1:
+                if echo: print target + '(inode ' + str(inode) + ')' + ' pulls ' + ktarget + ' (knode ' + str(knode) + ')'
+                inode = knode
+                ktarget = sorted_related[knode]
+                changed.add(ktarget)
+                propagate_change(ktarget, kids, targets)
+                inode = inode + 1
+                continue # To the top of "while inode ..."
+        else: # inode didn't change.
+            if target in non_existent:
+                if echo: print target + " doesn't exist, but is not required."
+                inode = inode + 1
+                continue
+            else: # target didn't change, exists.
+                # {{{ Check if target is newer than some of its descendants:
+                target_time = times[target]
+                all_paths_to_T = find_all_paths(kids, target, sorted_related[-1])
+                target_is_new = False
                 for path in all_paths_to_T:
-                    print 'path: ', path
-                    # Check if target is newer than some of its descendants:
+                    if echo: print 'path: ', path
                     for t in path[1:]:
                         if t in times and target_time > times[t]:
-                            print target +  " is newer than " + t
-                            # It is newer indeed:
+                            if echo: print target +  " is newer than " + t
                             target_is_new = True
-        if target_is_new:
-        # Mark all descendants of target as old
-            for path in all_paths_to_T:
-                for t in path[1:]:
-                    old.add(t)
-    print 'old targets:', old
-    print (target not in depend)
-    print depend
-    print (target in rules)
-    # Find all missing targets that need to be build - in addition to
-    # missing targets that are "old", some of those missing nodes that are not
-    # old but are ancestors (direct and indirect) for "old" nodes need to be
-    # built too. 
-    # In order to find missing files that are not "old" but are required to
-    # rebuild "old" files, __iterate through all missing nodes that are
-    # not old, but have such a path to some old node that doesn't
-    # have any existing unchanged node and mark them "old" too__.
+                            break
+                    if target_is_new:
+                        break
+                else:
+                    if echo: print target + " won't change its successors"
+                    
+                # }}}
+                if target_is_new:
+                    if echo: print target + ' is new; ' + 'the following successors will change: '
+                    # {{{ Mark all descendants of target as changed:
+                    for path in all_paths_to_T:
+                        if echo: print path[1:]
+                        for t in path[1:]:
+                            changed.add(t)
+                    # }}}
+        inode = inode + 1
+        continue # while inode < len(targets)
 
-    # Iterate through targets, not sorted_related, because we don't want
-    # nodes at the very bottom. Such nodes are either phony (in this
-    # case the are already marked as old) or real existing files (
-    # the corresponding test is already done in test_rules).
-    #for target in targets:
-    #    if target in times: continue # pick only non-existent files.
-    #    if target in old: continue # targets marked as old are not ineresting, they will be built anyways.
-    #    # Check target against all old targets
+    print 'changed targets:', changed
+    tobeupdated = filter(lambda x: x in changed, targets)
+    preserved = filter(lambda x: x not in changed, targets)
+
+    return tobeupdated, preserved
 
 
 
@@ -306,17 +349,18 @@ def make(thetarget, MAX_PARALLEL_JOBS, dir):
 
     sorted_related = test_rules(rules, sorted_nodes, depend, thetarget, echo = 1)
     targets=strip_input_files(sorted_related, depend)
+    print "sorted_related: " + str(sorted_related)
     print "Final target list: ", targets
     print 'kids: ', kids
 
     # debug:
-    get_tobeupdated(targets, sorted_related, depend, kids, echo = 1) 
-    sys.exit()
+    tobeupdated, preserved = get_tobeupdated(targets, sorted_related, depend, kids, echo = 1) 
+#   sys.exit()
 
-    changed_files = set()
 
-    tobeupdated, preserved = need_update(targets, changed_files, kids, echo
-                                        = 1)
+#    changed_files = set()
+#    tobeupdated, preserved = need_update(targets, changed_files, kids, echo
+#                                       = 1)
 
     print bcolors.OKBLUE + "Targets that will be preserved: " + str(preserved) + bcolors.ENDC
     print bcolors.HEADER + "Targets that will be updated: " + str(tobeupdated) + bcolors.ENDC
