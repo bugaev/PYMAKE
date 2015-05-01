@@ -1,0 +1,15 @@
+FILLINGMODE:
+     0: fill and use angular resolution for energy dependent theta2 cuts.
+     2: angular resolution only,
+* FILLINGMODE 0
+* ENERGYRECONSTRUCTIONMETHOD 0
+* ENERGYAXISBINS 60
+* ENERGYRECONSTRUCTIONQUALITY 0
+* AZIMUTHBINS 0
+* ISOTROPICARRIVALDIRECTIONS 0
+* TELESCOPETYPECUTS 1
+* FILLMONTECARLOHISTOS 0
+* ENERGYSPECTRUMINDEX  1 2.5 0.1
+* IGNOREFRACTIONOFEVENTS 0.5
+* CUTFILE /nfs/farm/g/agis/u01/software/redhat5-x86_64-64bit-gcc41/eventdisplay/LOCAL/ANASUM.GammaHadron.TMVAFixedSignal.gamma.dat
+* SIMULATIONFILE_DATA /nfs/farm/g/agis/u01/EventDisplayAnalysis/CFG02/gamma_E1000_4500_ZN200_AZ000_TH000_mscw_Tubes4_Rec4_Loss0.05_Ang10.0_Img12.0_Brd10.0_Size30.0.root

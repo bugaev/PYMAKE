@@ -1,0 +1,88 @@
+Runparameter for TMVA Training
+=====================================
+Note that part of this parameter file is modified by the scripts in $EVNDISPSYS/scripts/CTA:
+
+CTA.TMVA.sub_train.sh
+=====================================
+
+-- only lines with a '*' in the first column are read in --
+
+##############################################
+optimization method (MC or GA)
+(SplitSeed=0)
+
+ MVA_METHOD BDT
+* MVA_METHOD BDT NTrees=400:MaxDepth=3
+ MVA_METHOD BOXCUTS FitMethod=GA:PopSize=3000
+
+##############################################
+training variables
+(name must correspond to variable names in data tree of mscw root files)
+
+VARIABLE <variable name> <type (float=F, integer=I)>  <cut range min> <cut range max> <cut category>
+
+cut categories:  NotEnforced, FMax, FMin, FSmart
+
+* VARIABLE F -2.0  1.0 NotEnforced MSCW
+* VARIABLE F -2.0  1.0 NotEnforced MSCL
+!!!  VARIABLE F -1 -1 NotEnforced log10(ENERGYCHI2VARIABLE)
+* VARIABLE F -1 -1 NotEnforced log10(EChi2)
+* VARIABLE F 0.0 100. FMax EmissionHeight
+* VARIABLE F -1 -1 NotEnforced log10(EmissionHeightChi2)
+* VARIABLE F -1 -1 NotEnforced log10(SizeSecondMax)
+* VARIABLE I 2 -1 NotEnforced NImages_Ttype
+
+##############################################
+spectator variables
+* SPECTATOR runNumber
+* SPECTATOR eventNumber
+* SPECTATOR MCze
+* SPECTATOR MCaz
+* SPECTATOR MCxoff
+* SPECTATOR MCyoff
+* SPECTATOR MCxcore
+* SPECTATOR MCycore
+* SPECTATOR MCe0
+* SPECTATOR NImages
+* SPECTATOR Xoff
+* SPECTATOR Yoff
+* SPECTATOR Xcore
+* SPECTATOR Ycore
+!!!  SPECTATOR ENERGYVARIABLE
+* SPECTATOR Erec
+
+
+##############################################
+Minimum number of signal and background events needed 
+MINEVENTS <signal events> <background events>
+(this crosschecks the event numbers before the training; default is 50)
+
+* MINEVENTS 27 27
+
+##############################################
+Selection cut before training
+(similar to TTree::Draw() selection cuts)
+
+!!! SELECTION_CUTS MSCW>-2.&&MSCW<2.&&MSCL>-2.&&MSCL<5.&&ENERGYCHI2VARIABLE>=0.&&log10(ENERGYCHI2VARIABLE)<-0.4&&ENERGYVARIABLE>0.&&EmissionHeight>0.&&NImages>=MINIMAGES
+* SELECTION_CUTS MSCW>-2.&&MSCW<2.&&MSCL>-2.&&MSCL<5.&&EChi2>=0.&&log10(EChi2)<-0.4&&Erec>0.&&EmissionHeight>0.&&NImages>=2
+
+##############################################
+Prepare training options
+(e.g. number of signal and background events used for training: nTrain_Signal=100:nTrain_Background=100)
+
+ PREPARE_TRAINING_OPTIONS SplitMode=Random:!V
+* PREPARE_TRAINING_OPTIONS SplitMode=Block:!V:SplitSeed=0
+
+signal weight 
+* SIGNALWEIGHT 1.
+background weights 
+* BACKGROUNDWEIGHT 1.
+
+##############################################
+input files (added by script)
+(list of file)
+
+* ENERGYBINS 1 -2.50 2.50
+* OUTPUTFILE /nfs/farm/g/agis/u01/EventDisplayAnalysis/CFG02 tmp_0
+* SIGNALFILE /nfs/farm/g/agis/u01/EventDisplayAnalysis/CFG02/gamma_E1000_4500_ZN200_AZ000_TH000_mscw_Tubes4_Rec4_Loss0.05_Ang10.0_Img12.0_Brd10.0_Size30.0.root
+* BACKGROUNDFILE /nfs/farm/g/agis/u01/EventDisplayAnalysis/CFG02/proton_E1000_5000_ZN200_AZ000_TH000_mscw_Tubes4_Rec4_Loss0.05_Ang10.0_Img12.0_Brd10.0_Size30.0.root
